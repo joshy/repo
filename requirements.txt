@@ -2,7 +2,7 @@ flask
 Flask-Assets
 cx_Oracle
 requests
-psycopg2
+psycopg2-binary
 schedule
 jsmin
 daiquiri
