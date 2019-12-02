@@ -356,17 +356,9 @@ def show():
 
     if not accession_number.isdigit():
         logging.error(
-            'Accession number "{}" can\'t be converted to a number'.format(
-                accession_number
-            )
+            f'Accession number "{accession_number}" can\'t be converted to a number'
         )
-        return render_template(
-            "report.html",
-            version=app.config["VERSION"],
-            accession_number=accession_number,
-            meta_data={},
-            report=None,
-        )
+        return f"No report found for accession number: {accession_number}"
 
     con = get_ris_db()
     if output == "text":
