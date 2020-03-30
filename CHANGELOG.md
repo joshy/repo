@@ -1,5 +1,8 @@
 # Changelog
 
+## v3.2.8 - 30.03.2020
+ * Fixed bug in json api and added patientid to meta data
+
 ## v3.2.7 - 07.06.2019
  * Diff for accession number by befund id
 
