@@ -22,7 +22,9 @@ def q(cursor, day: datetime, parse_report: bool):
 
 
 def parse_report(text):
-    return parse(text.splitlines())
+    if text:
+        return parse(text.splitlines())
+    return ""
 
 
 def get_with_file(cursor, accession_number):
