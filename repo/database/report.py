@@ -160,13 +160,16 @@ def _select_by_accession_number(cursor, accession_number):
             A.SCHREIBER,
             A.GEGENLESER,
             B.UNTART_NAME,
-            C.PAT_PID_NUMMER
+            C.PAT_PID_NUMMER,
+            D.AUFNAHMEART
           FROM
             A_BEFUND A
           INNER JOIN A_UNTARTEN B ON
             A.UNTERS_ART = B.UNTART_KUERZEL
           INNER JOIN A_PATIENT C ON
             A.PATIENT_SCHLUESSEL = C.PATIENT_SCHLUESSEL
+          INNER JOIN A_UNTBEH_UEB D ON
+	          A.UNTERS_SCHLUESSEL = D.UNTERS_SCHLUESSEL
           WHERE
             A.UNTERS_SCHLUESSEL = :accession_number
           """
@@ -183,7 +186,8 @@ def _select_by_accession_number(cursor, accession_number):
                 'Schreiber': row[5],
                 'Gegenleser': row[6],
                 'Untersuchung': row[7],
-                'PatientID': row[8]
+                'PatientID': row[8],
+                'Aufnahmeart': row[9]
             }
             return row[0], meta_data if row is not None else None
     except cx_Oracle.DatabaseError as e:
