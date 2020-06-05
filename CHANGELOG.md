@@ -1,5 +1,8 @@
 # Changelog
 
+## v3.2.9 - 05.06.2020
+ * Added 'Aufnahmeart' in json output 
+
 ## v3.2.8 - 30.03.2020
  * Fixed bug in json api and added patientid to meta data
 
