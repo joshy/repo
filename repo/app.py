@@ -12,7 +12,7 @@ from distiller import process
 from repo.converter import rtf_to_text
 from repo.database.connection import open_connection
 from repo.database.contrast_medium import query_contrast_medium
-from repo.database.fall import query_fall_id, query_acc
+from repo.database.fall import query_for_fall_id_given_acc, query_acc
 from repo.database.review_report import (
     query_review_report,
     query_review_reports,
@@ -320,15 +320,27 @@ def cm():
     return jsonify(result)
 
 
-@app.route("/fall")
-def fall():
+@app.route("/acc2fall")
+def acc2fall():
     "Queries for fallid for a accession number"
     accession_number = request.args.get("accession_number", "")
     if not accession_number:
         print("No accession number found in request, use accession_number=XXX")
         return main()
     con = get_ris_db()
-    result = query_fall_id(con.cursor(), accession_number)
+    result = query_for_fall_id_given_acc(con.cursor(), accession_number)
+    return jsonify(result)
+
+
+@app.route("/fall2acc")
+def fall2acc():
+    "Queries for accession number for a fall id"
+    fall_id = request.args.get("fall_id", "")
+    if not fall_id:
+        print("No fall id found in request, use fall_id=XXX")
+        return main()
+    con = get_ris_db()
+    result = query_for_fall_id_given_acc(con.cursor(), fall_id)
     return jsonify(result)
 
 

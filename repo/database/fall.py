@@ -1,8 +1,9 @@
 import logging
+
 import cx_Oracle
 
 
-def query_fall_id(cursor, accession_number):
+def query_for_fall_id_given_acc(cursor, accession_number):
     sql = """
         SELECT DISTINCT
             FALL_FREMD_ID, UNTERS_SCHLUESSEL
@@ -13,6 +14,28 @@ def query_fall_id(cursor, accession_number):
           """
     try:
         cursor.execute(sql, accession_number=accession_number)
+        row = cursor.fetchone()
+        if row is None:
+            return None
+        else:
+            return {"fallid": row[0], "accession_number": row[1]}
+    except cx_Oracle.DatabaseError as e:
+        logging.error("Database error occured")
+        logging.error(e)
+        return None
+
+
+def query_for_acc_given_fall_id(cursor, fall_fremd_id):
+    sql = """
+        SELECT DISTINCT
+            FALL_FREMD_ID, UNTERS_SCHLUESSEL
+        FROM
+            A_ABRFALL_LEISTUNG
+        WHERE
+            FALL_FREMD_ID = :fall_fremd_id
+          """
+    try:
+        cursor.execute(sql, fall_fremd_id=fall_fremd_id)
         row = cursor.fetchone()
         if row is None:
             return None
