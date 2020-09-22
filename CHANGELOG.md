@@ -1,5 +1,8 @@
 # Changelog
 
+## v3.2.10 - 22.09.2020
+ * Reverse lookup for acc given fall id
+
 ## v3.2.9 - 05.06.2020
  * Added 'Aufnahmeart' in json output 
 

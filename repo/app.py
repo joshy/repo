@@ -12,7 +12,11 @@ from distiller import process
 from repo.converter import rtf_to_text
 from repo.database.connection import open_connection
 from repo.database.contrast_medium import query_contrast_medium
-from repo.database.fall import query_for_fall_id_given_acc, query_acc
+from repo.database.fall import (
+    query_for_fall_id_given_acc,
+    query_acc,
+    query_for_acc_given_fall_id,
+)
 from repo.database.review_report import (
     query_review_report,
     query_review_reports,
@@ -38,7 +42,7 @@ app.config.from_object("repo.default_config")
 app.config.from_pyfile("config.cfg")
 app.jinja_env.add_extension("jinja2.ext.loopcontrols")
 app.jinja_env.add_extension("jinja2.ext.do")
-version = app.config["VERSION"] = "3.2.9"
+version = app.config["VERSION"] = "3.2.10"
 
 RIS_DB_SETTINGS = {
     "host": app.config["RIS_DB_HOST"],
@@ -340,7 +344,7 @@ def fall2acc():
         print("No fall id found in request, use fall_id=XXX")
         return main()
     con = get_ris_db()
-    result = query_for_fall_id_given_acc(con.cursor(), fall_id)
+    result = query_for_acc_given_fall_id(con.cursor(), fall_id)
     return jsonify(result)
 
 
