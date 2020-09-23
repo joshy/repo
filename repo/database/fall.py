@@ -27,7 +27,7 @@ def query_for_fall_id_given_acc(cursor, accession_number):
 
 def query_for_acc_given_fall_id(cursor, fall_fremd_id):
     sql = """
-        SELECT DISTINCT
+        SELECT
             FALL_FREMD_ID, UNTERS_SCHLUESSEL
         FROM
             A_ABRFALL_LEISTUNG
