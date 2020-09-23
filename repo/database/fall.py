@@ -36,11 +36,11 @@ def query_for_acc_given_fall_id(cursor, fall_fremd_id):
           """
     try:
         cursor.execute(sql, fall_fremd_id=fall_fremd_id)
-        row = cursor.fetchone()
-        if row is None:
+        rows = cursor.fetchall()
+        if rows is None:
             return None
         else:
-            return {"fallid": row[0], "accession_number": row[1]}
+            return [{"fallid": row[0], "accession_number": row[1]} for row in rows]
     except cx_Oracle.DatabaseError as e:
         logging.error("Database error occured")
         logging.error(e)

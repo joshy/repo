@@ -1,5 +1,8 @@
 # Changelog
 
+## v4.0.0 - 23.09.2020
+ * Removed all `review` code, is now a separate app
+
 ## v3.2.10 - 22.09.2020
  * Reverse lookup for acc given fall id
 
