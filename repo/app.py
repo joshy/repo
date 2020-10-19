@@ -194,7 +194,6 @@ def distill():
 
     con = get_ris_db()
     report_as_text, meta_data = get_as_txt(con.cursor(), accession_number)
-    report_as_html, meta_data = get_with_file(con.cursor(), accession_number)
     result = process(report_as_text, meta_data)
     output = request.args.get("output", "html")
     if output == "json":
@@ -207,6 +206,7 @@ def distill():
     elif output == "text":
         return report_as_text
     else:
+        report_as_html, meta_data = get_with_file(con.cursor(), accession_number)
         return render_template(
             "distill.html",
             version=app.config["VERSION"],
