@@ -204,7 +204,7 @@ def distill():
         j["report_parts"] = parse_report(report_as_text)
         return jsonify(j)
     elif output == "text":
-        return report_as_text
+        return report_as_text or ""
     else:
         report_as_html, meta_data = get_with_file(con.cursor(), accession_number)
         return render_template(
