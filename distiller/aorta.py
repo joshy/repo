@@ -6,6 +6,8 @@ RESULT_AORTA = 'aorta'
 
 def extract_table(report, meta_data):
     result = {}
+    if report is None:
+        return result
     lines = [s.strip() for s in report.splitlines()]
     for l in lines:
         if l.startswith('Anulus') or l.startswith('Annulus'):

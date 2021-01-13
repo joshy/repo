@@ -39,7 +39,7 @@ def select_report(cursor, accession_number):
     if befund_schluessel is not None:
         return _select_befund(cursor, befund_schluessel), meta_data
     else:
-        return None, None
+        return None, meta_data
 
 
 def query_report_by_befund_status(cursor, start_date, end_date, befund_status='s'):
@@ -152,24 +152,26 @@ def _select_by_accession_number(cursor, accession_number):
     """
     sql = """
           SELECT
-            A.BEFUND_SCHLUESSEL,
-            A.BEFUND_DATUM,
-            A.BEFUND_STATUS,
             A.UNTERS_SCHLUESSEL,
-            A.UNTERS_ART,
-            A.SCHREIBER,
-            A.GEGENLESER,
+            A.AUFNAHMEART,
+            A.UNTERS_BEGINN,
             B.UNTART_NAME,
             C.PAT_PID_NUMMER,
-            D.AUFNAHMEART
+            D.BEFUND_SCHLUESSEL,
+            D.BEFUND_DATUM,
+            D.BEFUND_STATUS,
+            D.UNTERS_SCHLUESSEL,
+            D.UNTERS_ART,
+            D.SCHREIBER,
+            D.GEGENLESER
           FROM
-            A_BEFUND A
+            A_UNTBEH_UEB A
           INNER JOIN A_UNTARTEN B ON
             A.UNTERS_ART = B.UNTART_KUERZEL
           INNER JOIN A_PATIENT C ON
             A.PATIENT_SCHLUESSEL = C.PATIENT_SCHLUESSEL
-          INNER JOIN A_UNTBEH_UEB D ON
-	          A.UNTERS_SCHLUESSEL = D.UNTERS_SCHLUESSEL
+          LEFT OUTER JOIN A_BEFUND D ON
+            A.UNTERS_SCHLUESSEL = D.UNTERS_SCHLUESSEL
           WHERE
             A.UNTERS_SCHLUESSEL = :accession_number
           """
@@ -180,16 +182,16 @@ def _select_by_accession_number(cursor, accession_number):
             return None, None
         else:
             meta_data = {
-                'StudyDate': row[1].strftime('%d.%m.%Y %H:%M:%S'),
-                'AccessionNumber': row[3],
-                'BefundStatus': row[2],
-                'Schreiber': row[5],
-                'Gegenleser': row[6],
-                'Untersuchung': row[7],
-                'PatientID': row[8],
-                'Aufnahmeart': row[9]
+                'StudyDate': row[2].strftime('%d.%m.%Y %H:%M:%S'),
+                'AccessionNumber': row[0],
+                'BefundStatus': row[7] or "",
+                'Schreiber': row[10] or "",
+                'Gegenleser': row[11] or "",
+                'Untersuchung': row[3],
+                'PatientID': row[4],
+                'Aufnahmeart': row[1]
             }
-            return row[0], meta_data if row is not None else None
+            return row[5], meta_data if row is not None else None
     except cx_Oracle.DatabaseError as e:
         logging.error('Database error occured')
         logging.error(e)

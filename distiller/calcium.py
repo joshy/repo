@@ -6,6 +6,8 @@ RESULT_KEY_CALCIUM_SCORE = 'calcium_score'
 
 def extract_score(report, meta_data):
     result = {}
+    if report is None:
+        return result
     lines = [s.strip() for s in report.splitlines()]
     for l in lines:
         r = None

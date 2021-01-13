@@ -47,7 +47,7 @@ def get_as_txt(cursor, accession_number):
     if report:
         return rtf_to_text(report), meta_data
     else:
-        return None, None
+        return None, meta_data
 
 def _load(cursor, accession_number):
     report, meta_data = select_report(cursor, accession_number)
