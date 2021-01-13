@@ -1,5 +1,8 @@
 # Changelog
 
+## v4.0.1 - 13.01.2021
+ * In distill return metadata
+
 ## v4.0.0 - 23.09.2020
  * Removed all `review` code, is now a separate app
 
