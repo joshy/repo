@@ -181,8 +181,11 @@ def _select_by_accession_number(cursor, accession_number):
         if row is None:
             return None, None
         else:
+            studydate = None
+            if row[2] is not None:
+              studydate = row[2].strftime('%d.%m.%Y %H:%M:%S')
             meta_data = {
-                'StudyDate': row[2].strftime('%d.%m.%Y %H:%M:%S'),
+                'StudyDate': studydate,
                 'AccessionNumber': row[0],
                 'BefundStatus': row[7] or "",
                 'Schreiber': row[10] or "",
