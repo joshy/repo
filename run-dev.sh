@@ -1,2 +1,3 @@
 #!/bin/sh
-nodemon -e py --ignore notebooks --ignore logs --ignore venv --exec "python" runserver.py
+echo "Running on port 7777"
+flask --app "web:create_app()" --debug run --host 0.0.0.0 --port 7777

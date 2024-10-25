@@ -1,6 +1,6 @@
 import logging
 
-import cx_Oracle
+import oracledb
 
 
 def query_for_fall_id_given_acc(cursor, accession_number):
@@ -19,7 +19,7 @@ def query_for_fall_id_given_acc(cursor, accession_number):
             return None
         else:
             return {"fallid": row[0], "accession_number": row[1]}
-    except cx_Oracle.DatabaseError as e:
+    except oracledb.DatabaseError as e:
         logging.error("Database error occured")
         logging.error(e)
         return None

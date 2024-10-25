@@ -1,6 +1,6 @@
-from distiller.calcium import extract_score
-from distiller.aorta import extract_table
-from distiller.ventricle_function import extract_ventricle_function
+from .calcium import extract_score
+from .aorta import extract_table
+from .ventricle_function import extract_ventricle_function
 
 
 def process(report, meta_data):

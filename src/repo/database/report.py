@@ -18,8 +18,9 @@
   +------------------------------------------+
 """
 import logging
-import cx_Oracle
+import oracledb
 
+from sqlalchemy import text
 
 def query_report(cursor, day):
     rows = _query_acccesion_number_by_day(cursor, day)
@@ -105,7 +106,7 @@ def _query_by_befund_status(cursor, start_date, end_date, befund_status='s'):
         desc = [d[0].lower() for d in cursor.description]
         result = [dict(zip(desc, row)) for row in cursor]
         return result
-    except cx_Oracle.DatabaseError as e:
+    except oracledb.DatabaseError as e:
         logging.error('Database error occured')
         logging.error(e)
         return None
@@ -137,13 +138,13 @@ def _query_acccesion_number_by_day(cursor, day):
         desc = [d[0].lower() for d in cursor.description]
         result = [dict(zip(desc, row)) for row in cursor]
         return result
-    except cx_Oracle.DatabaseError as e:
+    except oracledb.DatabaseError as e:
         logging.error('Database error occured')
         logging.error(e)
         return None
 
 
-def _select_by_accession_number(cursor, accession_number):
+def _select_by_accession_number(engine, accession_number):
     # cursor, string -> Optional[Tuple[str, Dict[str, str]]]
     """
     Loads the report from the database and also some meta data.
@@ -176,32 +177,33 @@ def _select_by_accession_number(cursor, accession_number):
             A.UNTERS_SCHLUESSEL = :accession_number
           """
     try:
-        cursor.execute(sql, accession_number=accession_number)
-        row = cursor.fetchone()
-        if row is None:
-            return None, None
-        else:
-            studydate = None
-            if row[2] is not None:
-              studydate = row[2].strftime('%d.%m.%Y %H:%M:%S')
-            meta_data = {
-                'StudyDate': studydate,
-                'AccessionNumber': row[0],
-                'BefundStatus': row[7] or "",
-                'Schreiber': row[10] or "",
-                'Gegenleser': row[11] or "",
-                'Untersuchung': row[3],
-                'PatientID': row[4],
-                'Aufnahmeart': row[1]
-            }
-            return row[5], meta_data if row is not None else None
-    except cx_Oracle.DatabaseError as e:
+        with engine.connect() as con:
+          res = con.execute(text(sql), {"accession_number":accession_number})
+          row = res.fetchone()
+          if row is None:
+              return None, None
+          else:
+              studydate = None
+              if row[2] is not None:
+                studydate = row[2].strftime('%d.%m.%Y %H:%M:%S')
+              meta_data = {
+                  'StudyDate': studydate,
+                  'AccessionNumber': row[0],
+                  'BefundStatus': row[7] or "",
+                  'Schreiber': row[10] or "",
+                  'Gegenleser': row[11] or "",
+                  'Untersuchung': row[3],
+                  'PatientID': row[4],
+                  'Aufnahmeart': row[1]
+              }
+              return row[5], meta_data if row is not None else None
+    except oracledb.DatabaseError as e:
         logging.error('Database error occured')
         logging.error(e)
         return None, None
 
 
-def _select_befund(cursor, befund_schluessel):
+def _select_befund(engine, befund_schluessel):
     sql = """
           SELECT
             A.BEFUND_TEXT
@@ -212,10 +214,11 @@ def _select_befund(cursor, befund_schluessel):
           ORDER BY
             A.BEFUND_TEXT_SEQUENZ
           """
-    cursor.execute(sql, befund_schluessel=str(befund_schluessel))
-    result_set = cursor.fetchall()
-    doc = ''.join([row[0] for row in result_set])
-    return doc
+    with engine.connect() as con:
+      res = con.execute(text(sql), {"befund_schluessel":str(befund_schluessel)})
+      result_set = res.fetchall()
+      doc = ''.join([row[0] for row in result_set])
+      return doc
 
 
 def _query_departments(cursor):
@@ -237,7 +240,7 @@ def _query_departments(cursor):
         desc = [d[0].lower() for d in cursor.description]
         result = [dict(zip(desc, row)) for row in cursor]
         return result
-    except cx_Oracle.DatabaseError as e:
+    except oracledb.DatabaseError as e:
         logging.error('Database error occured')
         logging.error(e)
         return None
