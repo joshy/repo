@@ -2,6 +2,7 @@ import os
 import logging
 
 from sqlalchemy import create_engine, text
+from striprtf.striprtf import rtf_to_text
 
 logger = logging.getLogger(__name__)
 
@@ -34,3 +35,22 @@ def query_cdwh_status():
         return results[0]
 
 
+def get_as_txt_from_sectra(engine, accession_number):
+    sql = """
+        SELECT r.ReportText
+        FROM reports r
+        WHERE r.reportid = (
+            SELECT MAX(er.ExaminationReportReportId)
+            FROM examinationreports er
+            WHERE er.ExaminationReportExaminationId = (
+                SELECT e.ExaminationId
+                FROM Examinations e
+                WHERE e.ExaminationAccessionNumber = :accession_number
+            )
+        )
+        """
+    engine = sectra_engine()
+    with engine.connect() as con:
+        result = con.execute(text(sql), {"accession_number":accession_number})
+        results = result.mappings().all()
+        return rtf_to_text(results[0]["ReportText"])

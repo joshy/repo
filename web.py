@@ -14,6 +14,7 @@ from src.repo.database.fall import (
 )
 from dotenv import load_dotenv
 from src.repo.report import get_as_rtf, get_as_txt, get_with_file, parse_report, q
+from src.repo.database.sectra_cdwh import get_as_txt_from_sectra
 
 REPORTS_FOLDER = "reports"
 if not os.path.exists(REPORTS_FOLDER):
@@ -122,6 +123,16 @@ def create_app():
         result = query_acc(con.cursor(), befund_id)
         return jsonify(result)
 
+    @app.route("/sectra")
+    def sectra():
+        """Get the rtf report from sectra and return txt"""
+        accession_number = request.args.get("accession_number", "")
+        if not accession_number:
+            return "No accession number found in request, use accession_number=XXX"
+        engine = get_sectra_db()
+        report_as_text = get_as_txt_from_sectra(engine, accession_number)
+        return report_as_text
+       
 
     @app.route("/show")
     def show():
@@ -150,41 +161,6 @@ def create_app():
                 return ""
         else:
             report_as_html, meta_data = get_with_file(engine, accession_number)
-            return render_template(
-                "report.html",
-                version=app.config["VERSION"],
-                accession_number=accession_number,
-                meta_data=meta_data,
-                report=report_as_html,
-            )
-
-    @app.route("/sectra/show")
-    def sectra_show():
-        """ Renders Sectra Report as HTML. """
-        accession_number = request.args.get("accession_number", "")
-        output = request.args.get("output", "html")
-        # if no accession number is given -> render main page
-        if not accession_number:
-            print("No accession number found in request, use accession_number=XXX")
-            return main()
-
-        if not accession_number.isdigit():
-            logging.error(
-                f'Accession number "{accession_number}" can\'t be converted to a number'
-            )
-            return f"No report found for accession number: {accession_number}"
-
-        con = get_ris_db()
-        if output == "text":
-            report_as_text, meta_data = get_as_txt(con.cursor(), accession_number)
-            if report_as_text:
-                return report_as_text
-            else:
-                # don't throw an error, no report found -> return empty response
-                # because not all accession numbers have a valid report
-                return ""
-        else:
-            report_as_html, meta_data = get_with_file(con.cursor(), accession_number)
             return render_template(
                 "report.html",
                 version=app.config["VERSION"],
@@ -269,7 +245,7 @@ def create_app():
         """ Returns a connection to the Sectra CDWH """
         db = getattr(g, "_sectra_cdwh_database", None)
         if db is None:
-            db = g._sectra_cdwh_database = secta_cdwh_connection(   )
+            db = g._sectra_cdwh_database = secta_cdwh_connection()
         return g._sectra_cdwh_database
 
 
