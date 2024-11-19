@@ -53,4 +53,6 @@ def get_as_txt_from_sectra(engine, accession_number):
     with engine.connect() as con:
         result = con.execute(text(sql), {"accession_number":accession_number})
         results = result.mappings().all()
-        return rtf_to_text(results[0]["ReportText"])
+        if results:
+            return rtf_to_text(results[0]["ReportText"])
+        return ""
