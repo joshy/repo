@@ -1,7 +1,7 @@
 import logging
 import os
 import oracledb
-from sqlalchemy import create_engine, text
+from sqlalchemy import create_engine
 
 
 def open_connection():
@@ -22,7 +22,7 @@ def open_connection():
 
 
 def secta_cdwh_connection():
-    logging.debug('Opening connection to sectra db')
+    logging.debug("Opening connection to sectra db")
     user = os.getenv("SECTRA_USER")
     password = os.getenv("SECTRA_PASSWORD")
     hostname = os.getenv("SECTRA_HOST")
@@ -30,5 +30,16 @@ def secta_cdwh_connection():
     dbname = os.getenv("SECTRA_DB")
     engine = create_engine(
         f"mssql+pymssql://{user}:{password}@{hostname}:{port}/{dbname}"
+    )
+    return engine
+
+
+def usb_cdwh_engine():
+    user = os.getenv("CDWH_USER")
+    password = os.getenv("CDWH_PASSWORD")
+    hostname = os.getenv("CDWH_HOST")
+    port = os.getenv("CDWH_PORT")
+    engine = create_engine(
+        f"hana+hdbcli://{user}:{password}@{hostname}:{port}/?encrypt=true&sslValidateCertificate=false"
     )
     return engine

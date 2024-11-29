@@ -18,7 +18,7 @@
   +-----------------------------------------------------------------+
 """
 import logging
-import cx_Oracle
+import oracledb
 
 def query_contrast_medium(cursor, accession_number):
     sql = """
@@ -38,7 +38,7 @@ def query_contrast_medium(cursor, accession_number):
             return None
         else:
             return {'bemerkung': row[1], 'quantity': row[2]}
-    except cx_Oracle.DatabaseError as e:
+    except oracledb.DatabaseError as e:
         logging.error('Database error occured')
         logging.error(e)
         return None

@@ -2,23 +2,30 @@ import logging
 import os
 from datetime import datetime
 
-
-from src.repo.distiller import process
+from dotenv import load_dotenv
 from flask import Flask, g, jsonify, make_response, render_template, request
 from flask_assets import Bundle, Environment
-from src.repo.database.connection import open_connection, secta_cdwh_connection
+
+from src.repo.database.connection import (
+    open_connection,
+    secta_cdwh_connection,
+    usb_cdwh_engine,
+)
+from src.repo.database.contrast_medium import query_contrast_medium
 from src.repo.database.fall import (
     query_acc,
     query_for_acc_given_fall_id,
     query_for_fall_id_given_acc,
 )
-from dotenv import load_dotenv
-from src.repo.report import get_as_rtf, get_as_txt, get_with_file, parse_report, q
 from src.repo.database.sectra_cdwh import get_as_txt_from_sectra
+from src.repo.database.usb_cdwh import get_patho_report
+from src.repo.distiller import process
+from src.repo.report import get_as_rtf, get_as_txt, get_with_file, parse_report, q
 
 REPORTS_FOLDER = "reports"
 if not os.path.exists(REPORTS_FOLDER):
     os.makedirs(REPORTS_FOLDER, exist_ok=True)
+
 
 def create_app():
     load_dotenv()
@@ -28,7 +35,6 @@ def create_app():
     app.jinja_env.add_extension("jinja2.ext.loopcontrols")
     app.jinja_env.add_extension("jinja2.ext.do")
     version = app.config["VERSION"] = "4.0.1"
-
 
     assets = Environment(app)
     js = Bundle(
@@ -53,11 +59,9 @@ def create_app():
     )
     assets.register("js_all", js)
 
-
     @app.route("/")
     def main():
-        return render_template("index.html", version=app.config["VERSION"])
-
+        return render_template("index.html", version=version)
 
     @app.route("/q")
     def query():
@@ -71,10 +75,8 @@ def create_app():
         rows = q(engine, dd, parse_text)
         return jsonify(rows)
 
-
     def remove_NaT_format(df):
         return df.fillna("None")
-
 
     @app.route("/cm")
     def cm():
@@ -87,7 +89,6 @@ def create_app():
         result = query_contrast_medium(con.cursor(), accession_number)
         return jsonify(result)
 
-
     @app.route("/acc2fall")
     def acc2fall():
         "Queries for fallid for a accession number"
@@ -99,7 +100,6 @@ def create_app():
         result = query_for_fall_id_given_acc(con.cursor(), accession_number)
         return jsonify(result)
 
-
     @app.route("/fall2acc")
     def fall2acc():
         "Queries for accession number for a fall id"
@@ -110,7 +110,6 @@ def create_app():
         con = get_ris_db()
         result = query_for_acc_given_fall_id(con.cursor(), fall_id)
         return jsonify(result)
-
 
     @app.route("/acc")
     def acc():
@@ -129,14 +128,20 @@ def create_app():
         accession_number = request.args.get("accession_number", "")
         if not accession_number:
             return "No accession number found in request, use accession_number=XXX"
-        engine = get_sectra_db()
-        report_as_text = get_as_txt_from_sectra(engine, accession_number)
-        return report_as_text
-       
+        
+        # ok we have request for pathology
+        if not accession_number[0].isdigit():
+            engine = get_usb_cdwh_db()
+            report = get_patho_report(engine, accession_number)
+            return report
+        else:
+            engine = get_sectra_db()
+            report_as_text = get_as_txt_from_sectra(engine, accession_number)
+            return report_as_text
 
     @app.route("/show")
     def show():
-        """ Renders RIS Report as HTML. """
+        """Renders RIS Report as HTML."""
         accession_number = request.args.get("accession_number", "")
         output = request.args.get("output", "html")
         # if no accession number is given -> render main page
@@ -169,15 +174,16 @@ def create_app():
                 report=report_as_html,
             )
 
-
     @app.route("/distill")
     def distill():
-        """ Renders RIS Report as HTML. """
+        """Renders RIS Report as HTML."""
         accession_number = request.args.get("accession_number", "")
         output = request.args.get("output", "html")
         # if no accession number is given -> render main page
         if not accession_number:
-            logging.warn("No accession number found in request, use accession_number=XXX")
+            logging.warn(
+                "No accession number found in request, use accession_number=XXX"
+            )
             return main()
 
         if not accession_number.isdigit():
@@ -218,10 +224,9 @@ def create_app():
                 report=report_as_html,
             )
 
-
     @app.route("/download")
     def download():
-        """ Downloads the original RTF report. """
+        """Downloads the original RTF report."""
         accession_number = request.args.get("accession_number", "")
         if not accession_number:
             return ""
@@ -232,21 +237,25 @@ def create_app():
         response.headers["Content-Disposition"] = cd
         return response
 
-
     def get_ris_db():
-        """ Returns a connection to the Oracle db. """
+        """Returns a connection to the Oracle db."""
         db = getattr(g, "_ris_database", None)
         if db is None:
             db = g._ris_database = open_connection()
         return g._ris_database
 
-
     def get_sectra_db():
-        """ Returns a connection to the Sectra CDWH """
+        """Returns a connection to the Sectra CDWH"""
         db = getattr(g, "_sectra_cdwh_database", None)
         if db is None:
             db = g._sectra_cdwh_database = secta_cdwh_connection()
         return g._sectra_cdwh_database
 
+    def get_usb_cdwh_db():
+        """ Returns a connection to the USB CDWH"""
+        db = getattr(g, "_usb_cdwh_database", None)
+        if db is None:
+            db = g._usb_cdwh_database = usb_cdwh_engine()
+        return g._usb_cdwh_database
 
     return app
