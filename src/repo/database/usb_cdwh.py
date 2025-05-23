@@ -27,4 +27,4 @@ def get_patho_report(engine, accession_number):
                 f"Warning to many results for accession nr: {accession_number}, returning from first result"
             )
             return results[0].get("report")
-        return results[0].get("report")
+        return "No patho report found"
