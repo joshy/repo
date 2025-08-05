@@ -42,11 +42,14 @@ def get_as_txt_from_sectra(engine, accession_number):
         WHERE r.reportid = (
             SELECT MAX(er.ExaminationReportReportId)
             FROM examinationreports er
+            JOIN reports r2 ON er.ExaminationReportReportId = r2.reportid
             WHERE er.ExaminationReportExaminationId = (
                 SELECT e.ExaminationId
                 FROM Examinations e
                 WHERE e.ExaminationAccessionNumber = :accession_number
             )
+            AND r2.ReportText IS NOT NULL
+            AND LTRIM(RTRIM(r2.ReportText)) != ''
         )
         """
     engine = sectra_engine()
