@@ -1,7 +1,7 @@
 import logging
 import os
 import oracledb
-from sqlalchemy import create_engine
+from sqlalchemy import create_engine, NullPool
 
 
 def open_connection():
@@ -17,6 +17,7 @@ def open_connection():
     engine = create_engine(
         f"oracle+oracledb://{RIS_DB_USER}:{RIS_DB_PASSWORD}@{RIS_DB_HOST}:{RIS_DB_PORT}/?service_name={RIS_DB_SERVICE}",
         max_identifier_length=128,
+        poolclass=NullPool,
     )
     return engine
 
