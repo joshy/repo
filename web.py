@@ -133,6 +133,9 @@ def create_app():
         if not accession_number[0].isdigit():
             engine = get_usb_cdwh_db()
             report = get_patho_report(engine, accession_number)
+            # joshy 1.9.2026 not sure what the correct report is 
+            # therefore better no report than a wrong report
+            report = ""
             return report
         else:
             engine = get_sectra_db()
