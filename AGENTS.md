@@ -40,18 +40,18 @@ not a general solution, so don't generalize schemas or queries unless asked.
 ## Setup and running
 
 - Python >= 3.12, managed with `uv` (`pyproject.toml` and `uv.lock` are the
-  source of truth; `requirements.txt` is legacy).
-- `uv sync` to install.
+  source of truth).
+- `just sync` (or `uv sync`) to install. Run `just` to list all recipes.
 - Config: `src/repo/default_config.py`, overridden by `instance/config.cfg`.
   Credentials come from environment variables loaded from `.env` (`RIS_DB_*`,
   `SECTRA_*`, `CDWH_*`).
-- Dev server: `./run-dev.sh` (Flask debug on port 7777).
-- Production uses gunicorn with `"web:create_app()"`.
+- Dev server: `just dev` (Flask debug on port 7777, override with `just dev 8000`).
+- Production-style: `just serve` (gunicorn with `"web:create_app()"`).
 
 ## Tests
 
 - Tests use `unittest`. pytest is not installed.
-- Run the working suite: `uv run python -m unittest tests.test_pathology -v`
+- Run the working suite: `just test` (runs `tests.test_pathology`).
 - `uv run python -m unittest discover -s tests` currently reports import errors
   in `test_compare.py` (imports the removed `review` package) and the
   `test_distill_*` files (import `distiller` instead of `src.repo.distiller`).
