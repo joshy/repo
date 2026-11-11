@@ -4,6 +4,7 @@ from datetime import datetime
 
 from dotenv import load_dotenv
 from flask import Flask, g, jsonify, make_response, render_template, request
+from markupsafe import escape
 from flask_assets import Bundle, Environment
 
 from src.repo.database.connection import (
@@ -132,15 +133,20 @@ def create_app():
         # ok we have request for pathology
         if not accession_number[0].isdigit():
             engine = get_usb_cdwh_db()
-            report = get_patho_report(engine, accession_number)
-            # joshy 1.9.2026 not sure what the correct report is 
-            # therefore better no report than a wrong report
-            report = ""
-            return report
+            report_as_text = get_patho_report(engine, accession_number)
         else:
             engine = get_sectra_db()
             report_as_text = get_as_txt_from_sectra(engine, accession_number)
-            return report_as_text
+
+        if request.args.get("output", "text") == "html":
+            return render_template(
+                "report.html",
+                version=app.config["VERSION"],
+                accession_number=accession_number,
+                meta_data=None,
+                report=escape(report_as_text) if report_as_text else None,
+            )
+        return report_as_text
 
     @app.route("/show")
     def show():

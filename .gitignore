@@ -111,3 +111,5 @@ repo/static/gen
 privat_patient.csv
 
 *.csv
+
+.pytest_cache/
